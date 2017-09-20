@@ -1,0 +1,354 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <meta name="author" content="Matthias Heinzel" />
+  <meta name="date" content="2017-09-20" />
+  <title>Beautiful Folds</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+  <link rel="stylesheet" type="text/css" media="screen, projection, print"
+    href="http://www.w3.org/Talks/Tools/Slidy2/styles/slidy.css" />
+  <script src="http://www.w3.org/Talks/Tools/Slidy2/scripts/slidy.js"
+    charset="utf-8" type="text/javascript"></script>
+</head>
+<body>
+<div class="slide titlepage">
+  <h1 class="title">Beautiful Folds</h1>
+  <p class="author">
+Matthias Heinzel
+  </p>
+  <p class="date">September 20, 2017</p>
+</div>
+<div id="outline" class="slide section level1">
+<h1>Outline</h1>
+<p>Folds</p>
+<p>A Problem</p>
+<p>Possible Solutions</p>
+<p>Composing Folds</p>
+<p>Folds at Scale</p>
+</div>
+<div id="folds" class="slide section level1">
+<h1>Folds</h1>
+<p>Folds combine the elements in a structure</p>
+</div>
+<div id="folds-1" class="slide section level1">
+<h1>Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">foldl&#39; ::</span> (b <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> b</code></pre></div>
+<p>actually:</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">foldl&#39; ::</span> <span class="dt">Foldable</span> f <span class="ot">=&gt;</span> (b <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> f a <span class="ot">-&gt;</span> b</code></pre></div>
+</div>
+<div id="using-folds" class="slide section level1">
+<h1>Using Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">foldl&#39; ::</span> (b <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> b <span class="ot">-&gt;</span> [a] <span class="ot">-&gt;</span> b</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">length<span class="ot"> ::</span> [a] <span class="ot">-&gt;</span> <span class="dt">Int</span>
+length <span class="fu">=</span> foldl&#39; (\ acc e <span class="ot">-&gt;</span> acc <span class="fu">+</span> <span class="dv">1</span>) <span class="dv">0</span>
+
+sum<span class="ot"> ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Int</span>
+sum <span class="fu">=</span> foldl&#39; (<span class="fu">+</span>) <span class="dv">0</span></code></pre></div>
+</div>
+<div id="summing-a-hundred-million-elements" class="slide section level1">
+<h1>Summing a hundred million elements</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">main <span class="fu">=</span> print <span class="fu">$</span> foldl&#39; (<span class="fu">+</span>) (<span class="dv">0</span><span class="ot"> ::</span> <span class="dt">Int</span>) [<span class="dv">1</span> <span class="fu">..</span> <span class="dv">100000000</span>]</code></pre></div>
+<pre><code>53,168 bytes allocated in the heap
+ 3,480 bytes copied during GC
+44,384 bytes maximum residency (1 sample(s))
+17,056 bytes maximum slop
+     1 MB total memory in use (0 MB lost due to fragmentation)
+
+GC      time    0.000s  (  0.000s elapsed)
+Total   time    0.144s  (  0.082s elapsed)</code></pre>
+</div>
+<div id="using-multiple-folds" class="slide section level1">
+<h1>Using multiple folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">divide ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Double</span>  <span class="co">-- for convenience</span>
+divide x y <span class="fu">=</span> intToDouble x <span class="fu">/</span> intToDouble y
+  <span class="kw">where</span>
+    intToDouble <span class="fu">=</span> fromInteger <span class="fu">.</span> fromIntegral</code></pre></div>
+</div>
+<div id="using-multiple-folds-1" class="slide section level1">
+<h1>Using multiple folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">divide ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Double</span>  <span class="co">-- for convenience</span>
+divide x y <span class="fu">=</span> intToDouble x <span class="fu">/</span> intToDouble y
+  <span class="kw">where</span>
+    intToDouble <span class="fu">=</span> fromInteger <span class="fu">.</span> fromIntegral</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">average ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Double</span>
+average list <span class="fu">=</span> divide (sum list) (length list)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">main <span class="fu">=</span> print <span class="fu">$</span> average [<span class="dv">1</span> <span class="fu">..</span> <span class="dv">100000000</span>]</code></pre></div>
+</div>
+<div id="the-problem" class="slide section level1">
+<h1>The problem</h1>
+<div class="figure">
+<img src="img/spaceleak.png" alt="A space leak in its natural habitat" style="height:30.0%" />
+<p class="caption">A space leak in its natural habitat</p>
+</div>
+<pre><code> 8,000,107,232 bytes allocated in the heap
+12,237,661,504 bytes copied during GC
+ 3,419,124,968 bytes maximum residency (17 sample(s))
+   684,952,344 bytes maximum slop
+          7760 MB total memory in use (0 MB lost due to fragmentation)
+
+GC      time    9.004s  ( 18.373s elapsed)
+Total   time   10.688s  ( 23.502s elapsed)</code></pre>
+</div>
+<div id="a-solution" class="slide section level1">
+<h1>A solution?</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">average&#39; ::</span> [<span class="dt">Int</span>] <span class="ot">-&gt;</span> <span class="dt">Double</span>
+average&#39; xs <span class="fu">=</span> divide s l
+  <span class="kw">where</span>
+    <span class="dt">Pair</span> s l <span class="fu">=</span> foldl&#39; f (<span class="dt">Pair</span> <span class="dv">0</span> <span class="dv">0</span>) xs
+    f (<span class="dt">Pair</span> s l) n <span class="fu">=</span> <span class="dt">Pair</span> (s <span class="fu">+</span> n) (l <span class="fu">+</span> <span class="dv">1</span>)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Pair</span> a b <span class="fu">=</span> <span class="dt">Pair</span> <span class="fu">!</span>a <span class="fu">!</span>b</code></pre></div>
+</div>
+<div id="a-solution-1" class="slide section level1">
+<h1>A solution?</h1>
+<pre><code>8,000,105,904 bytes allocated in the heap
+      754,936 bytes copied during GC
+       44,384 bytes maximum residency (2 sample(s))
+       53,936 bytes maximum slop
+            1 MB total memory in use (0 MB lost due to fragmentation)
+
+GC      time    0.028s  (  0.030s elapsed)
+Total   time    1.108s  (  1.074s elapsed)</code></pre>
+<p>[x] Performance</p>
+<p>[ ] Code reuse :(</p>
+</div>
+<div id="composition" class="slide section level1">
+<h1>Composition?</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Fold</span> i o <span class="fu">=</span> [i] <span class="ot">-&gt;</span> o</code></pre></div>
+<p>too late for composition...</p>
+</div>
+<div id="composition-1" class="slide section level1">
+<h1>Composition?</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Fold</span> i o <span class="fu">=</span> [i] <span class="ot">-&gt;</span> o</code></pre></div>
+<p>too late for composition...</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> <span class="dt">Fold</span> (o <span class="ot">-&gt;</span> i <span class="ot">-&gt;</span> o) o</code></pre></div>
+<p>could work</p>
+</div>
+<div id="composition-2" class="slide section level1">
+<h1>Composition?</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Fold</span> i o <span class="fu">=</span> [i] <span class="ot">-&gt;</span> o</code></pre></div>
+<p>too late for composition...</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> <span class="dt">Fold</span> (o <span class="ot">-&gt;</span> i <span class="ot">-&gt;</span> o) o</code></pre></div>
+<p>could work</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)  <span class="co">-- what is m?</span></code></pre></div>
+</div>
+<div id="composition-3" class="slide section level1">
+<h1>Composition?</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">type</span> <span class="dt">Fold</span> i o <span class="fu">=</span> [i] <span class="ot">-&gt;</span> o</code></pre></div>
+<p>too late for composition...</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> <span class="dt">Fold</span> (o <span class="ot">-&gt;</span> i <span class="ot">-&gt;</span> o) o</code></pre></div>
+<p>could work</p>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+</div>
+<div id="composing-folds" class="slide section level1">
+<h1>Composing Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">compose ::</span> <span class="dt">Fold</span> i o <span class="ot">-&gt;</span> <span class="dt">Fold</span> i o&#39; <span class="ot">-&gt;</span> <span class="dt">Fold</span> i (o, o&#39;)
+compose <span class="fu">=</span> _</code></pre></div>
+</div>
+<div id="composing-folds-1" class="slide section level1">
+<h1>Composing Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">compose ::</span> <span class="dt">Fold</span> i o <span class="ot">-&gt;</span> <span class="dt">Fold</span> i o&#39; <span class="ot">-&gt;</span> <span class="dt">Fold</span> i (o, o&#39;)
+compose <span class="fu">=</span> _</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> (<span class="dt">Monoid</span> a, <span class="dt">Monoid</span> b) <span class="ot">=&gt;</span> <span class="dt">Monoid</span> (<span class="dt">Pair</span> a b) <span class="kw">where</span>
+  mempty <span class="fu">=</span> <span class="dt">Pair</span> mempty mempty
+  mappend (<span class="dt">Pair</span> a b) (<span class="dt">Pair</span> a&#39; b&#39;) <span class="fu">=</span> <span class="dt">Pair</span> (mappend a a&#39;) (mappend b b&#39;)</code></pre></div>
+</div>
+<div id="composing-folds-2" class="slide section level1">
+<h1>Composing Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">compose ::</span> <span class="dt">Fold</span> i o <span class="ot">-&gt;</span> <span class="dt">Fold</span> i o&#39; <span class="ot">-&gt;</span> <span class="dt">Fold</span> i (o, o&#39;)
+compose (<span class="dt">Fold</span> pre1 post1) (<span class="dt">Fold</span> pre2 post2) <span class="fu">=</span> <span class="dt">Fold</span> pre post
+  <span class="kw">where</span>
+    pre i <span class="fu">=</span> <span class="dt">Pair</span> (pre1 i) (pre2 i)
+    post (<span class="dt">Pair</span> m1 m2) <span class="fu">=</span> (post1 m1, post2 m2)</code></pre></div>
+</div>
+<div id="composing-folds-3" class="slide section level1">
+<h1>Composing Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Functor</span> (<span class="dt">Fold</span> i) <span class="kw">where</span>
+
+  <span class="co">-- (a -&gt; b) -&gt; Fold i a -&gt; Fold i b</span>
+  fmap f (<span class="dt">Fold</span> pre post) <span class="fu">=</span> _</code></pre></div>
+</div>
+<div id="composing-folds-4" class="slide section level1">
+<h1>Composing Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Functor</span> (<span class="dt">Fold</span> i) <span class="kw">where</span>
+
+  <span class="co">-- (a -&gt; b) -&gt; Fold i a -&gt; Fold i b</span>
+  fmap f (<span class="dt">Fold</span> pre post) <span class="fu">=</span> <span class="dt">Fold</span> pre (f <span class="fu">.</span> post)</code></pre></div>
+</div>
+<div id="folds-are-applicatives" class="slide section level1">
+<h1>Folds are Applicatives</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Applicative</span> (<span class="dt">Fold</span> i) <span class="kw">where</span>
+
+  <span class="co">-- a -&gt; Fold i a</span>
+  pure x <span class="fu">=</span> _
+
+  <span class="co">-- Fold i (a -&gt; b) -&gt; Fold i a -&gt; Fold i b</span>
+  <span class="dt">Fold</span> preF postF <span class="fu">&lt;*&gt;</span> <span class="dt">Fold</span> preX postX <span class="fu">=</span> _</code></pre></div>
+</div>
+<div id="folds-are-applicatives-1" class="slide section level1">
+<h1>Folds are Applicatives</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Applicative</span> (<span class="dt">Fold</span> i) <span class="kw">where</span>
+
+  <span class="co">-- a -&gt; Fold i a</span>
+  pure x <span class="fu">=</span> <span class="dt">Fold</span> (const ()) (const x)
+
+  <span class="co">-- Fold i (a -&gt; b) -&gt; Fold i a -&gt; Fold i b</span>
+  <span class="dt">Fold</span> preF postF <span class="fu">&lt;*&gt;</span> <span class="dt">Fold</span> preX postX <span class="fu">=</span> _</code></pre></div>
+</div>
+<div id="folds-are-applicatives-2" class="slide section level1">
+<h1>Folds are Applicatives</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">instance</span> <span class="dt">Applicative</span> (<span class="dt">Fold</span> i) <span class="kw">where</span>
+
+  <span class="co">-- a -&gt; Fold i a</span>
+  pure x <span class="fu">=</span> <span class="dt">Fold</span> (const ()) (const x)
+
+  <span class="co">-- Fold i (a -&gt; b) -&gt; Fold i a -&gt; Fold i b</span>
+  <span class="dt">Fold</span> preF postF <span class="fu">&lt;*&gt;</span> <span class="dt">Fold</span> preX postX <span class="fu">=</span> <span class="dt">Fold</span> pre post
+    <span class="kw">where</span>
+      pre i <span class="fu">=</span> <span class="dt">Pair</span> (preF i) (preX i)
+      post (<span class="dt">Pair</span> mF mX) <span class="fu">=</span> postF mF (postX mX)</code></pre></div>
+</div>
+<div id="the-average-fold-again" class="slide section level1">
+<h1>The average Fold, again</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell">length<span class="ot"> ::</span> <span class="dt">Fold</span> i <span class="dt">Int</span>
+length <span class="fu">=</span> <span class="dt">Fold</span> (<span class="dt">Sum</span> <span class="fu">.</span> const <span class="dv">1</span>) getSum
+
+sum<span class="ot"> ::</span> <span class="dt">Fold</span> <span class="dt">Int</span> <span class="dt">Int</span>
+sum <span class="fu">=</span> <span class="dt">Fold</span> <span class="dt">Sum</span> getSum
+
+<span class="ot">average ::</span> <span class="dt">Fold</span> <span class="dt">Int</span> <span class="dt">Double</span>
+average <span class="fu">=</span> divide <span class="fu">&lt;$&gt;</span> sum <span class="fu">&lt;*&gt;</span> length</code></pre></div>
+</div>
+<div id="running-folds" class="slide section level1">
+<h1>Running Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">{-# LANGUAGE ExistentialQuantification #-}</span>
+<span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">run ::</span> <span class="dt">Fold</span> i o <span class="ot">-&gt;</span> [i] <span class="ot">-&gt;</span> o
+run (<span class="dt">Fold</span> pre post) <span class="fu">=</span> post <span class="fu">.</span> foldl&#39; mappend mempty <span class="fu">.</span> map pre</code></pre></div>
+</div>
+<div id="running-folds-1" class="slide section level1">
+<h1>Running Folds</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">average ::</span> <span class="dt">Fold</span> <span class="dt">Int</span> <span class="dt">Double</span>
+average <span class="fu">=</span> divide <span class="fu">&lt;$&gt;</span> sum <span class="fu">&lt;*&gt;</span> length
+
+main <span class="fu">=</span> print <span class="fu">$</span> run average [<span class="dv">1</span> <span class="fu">..</span> <span class="dv">100000000</span>]</code></pre></div>
+<pre><code>19,200,106,912 bytes allocated in the heap
+     3,389,824 bytes copied during GC
+        44,384 bytes maximum residency (2 sample(s))
+        30,600 bytes maximum slop
+             1 MB total memory in use (0 MB lost due to fragmentation)
+
+GC      time    0.092s  (  0.074s elapsed)
+Total   time    4.184s  (  4.197s elapsed)</code></pre>
+</div>
+<div id="running-folds-in-parallel" class="slide section level1">
+<h1>Running Folds in Parallel</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="ot">runInChunksOf ::</span> <span class="dt">Int</span> <span class="ot">-&gt;</span> <span class="dt">Fold</span> i o <span class="ot">-&gt;</span> [i] <span class="ot">-&gt;</span> o
+runInChunksOf n (<span class="dt">Fold</span> pre post) <span class="fu">=</span>
+  post <span class="fu">.</span> reduce <span class="fu">.</span> parMap rseq inner <span class="fu">.</span> chunksOf n
+  <span class="kw">where</span>
+    reduce <span class="fu">=</span> foldl&#39; mappend mempty
+    inner <span class="fu">=</span> reduce <span class="fu">.</span> fmap pre</code></pre></div>
+</div>
+<div id="running-folds-at-scale" class="slide section level1">
+<h1>Running Folds at Scale</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span>
+  forall m<span class="fu">.</span> (<span class="dt">Monoid</span> m, <span class="dt">Binary</span> m) <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)</code></pre></div>
+<p>across multiple devices</p>
+<p>similar to Map-Reduce</p>
+</div>
+<div id="the-essence" class="slide section level1">
+<h1>The Essence</h1>
+<div class="sourceCode"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span class="kw">data</span> <span class="dt">Fold</span> i o <span class="fu">=</span> forall m<span class="fu">.</span> <span class="dt">Monoid</span> m <span class="ot">=&gt;</span> <span class="dt">Fold</span> (i <span class="ot">-&gt;</span> m) (m <span class="ot">-&gt;</span> o)
+
+<span class="kw">instance</span> <span class="dt">Functor</span> (<span class="dt">Fold</span> i) <span class="kw">where</span>
+  fmap f (<span class="dt">Fold</span> pre post) <span class="fu">=</span> <span class="dt">Fold</span> pre (f <span class="fu">.</span> post)
+
+<span class="kw">instance</span> <span class="dt">Applicative</span> (<span class="dt">Fold</span> i) <span class="kw">where</span>
+  pure x <span class="fu">=</span> <span class="dt">Fold</span> (const ()) (const x)
+  <span class="dt">Fold</span> preF postF <span class="fu">&lt;*&gt;</span> <span class="dt">Fold</span> preX postX <span class="fu">=</span> <span class="dt">Fold</span> pre post
+    <span class="kw">where</span>
+      pre i <span class="fu">=</span> <span class="dt">Pair</span> (preF i) (preX i)
+      post (<span class="dt">Pair</span> mF mX) <span class="fu">=</span> postF mF (postX mX)
+
+<span class="ot">run ::</span> <span class="dt">Fold</span> i o <span class="ot">-&gt;</span> [i] <span class="ot">-&gt;</span> o
+run (<span class="dt">Fold</span> pre post) <span class="fu">=</span> post <span class="fu">.</span> foldl&#39; mappend mempty <span class="fu">.</span> map pre</code></pre></div>
+</div>
+<div id="what-we-have" class="slide section level1">
+<h1>What we have</h1>
+<p>A representation of Folds that</p>
+<ul>
+<li>composes nicely</li>
+<li>traverses structures only once</li>
+<li>is reasonably fast</li>
+<li>can be run in parallel</li>
+</ul>
+</div>
+<div id="where-to-learn-more" class="slide section level1">
+<h1>Where to learn more</h1>
+<ul>
+<li>Gabriel Gonzalez' MuniHac talk <a href="https://www.youtube.com/watch?v=6a5Ti0r8Q2s">(youtube.com/watch?v=6a5Ti0r8Q2s)</a></li>
+<li>Algebird library in Scala <a href="https://github.com/twitter/algebird">(github.com/twitter/algebird)</a></li>
+</ul>
+<p>Questions?</p>
+</div>
+</body>
+</html>
