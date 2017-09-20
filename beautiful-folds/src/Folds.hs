@@ -3,8 +3,10 @@
 module Folds where
 
 import Data.Monoid
+import Data.List.Split (chunksOf)
 import Data.Bifunctor
 import Data.Foldable (foldl')
+import Control.Parallel.Strategies
 
 
 data Pair a b = Pair !a !b
@@ -32,8 +34,17 @@ data FoldLeft i o = forall a. FoldLeft
   , _post :: a -> o
   }
 
-runFoldLeft :: Foldable f => FoldLeft i o -> f i -> o
+runFoldLeft :: FoldLeft i o -> [i] -> o
 runFoldLeft (FoldLeft c z p) = p . foldl' c z
+
+runFoldLeftChunked :: Int -> FoldLeft i o -> [i] -> o
+runFoldLeftChunked n (FoldLeft c z p) =
+  p . reduce . parMap rseq inner . chunksOf n
+  where
+    --inner :: [i] -> a -> a
+    inner = flip (foldl' c)
+    --reduce :: [a -> a] -> a
+    reduce = foldl' (flip ($)) z
 
 instance Functor (FoldLeft i) where
   fmap f (FoldLeft c z p) = FoldLeft c z (f . p)
@@ -72,8 +83,15 @@ data FoldMonoid i o = forall m. Monoid m => FoldMonoid
   , _summarize :: m -> o
   }
 
-runFoldMonoid :: (Functor f, Foldable f) => FoldMonoid i o -> f i -> o
+runFoldMonoid :: FoldMonoid i o -> [i] -> o
 runFoldMonoid (FoldMonoid t s) = s . foldl' mappend mempty . fmap t
+
+runFoldMonoidChunked :: Int -> FoldMonoid i o -> [i] -> o
+runFoldMonoidChunked n (FoldMonoid t s) =
+  s . reduce . parMap rseq inner . chunksOf n
+  where
+    reduce = foldl' mappend mempty
+    inner = reduce . fmap t
 
 instance Functor (FoldMonoid i) where
   fmap f (FoldMonoid t s) = FoldMonoid t (f . s)
