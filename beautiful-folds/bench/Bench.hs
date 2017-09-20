@@ -16,21 +16,21 @@ main :: IO ()
 main = defaultMain
   [ bgroup "FoldLeft"
     [ bgroup "length" $ flip map lists $ \(n,l) ->
-      bench n $ whnf (runFoldLeft lengthL) l
+      bench n $ whnf (runFoldLeft lengthL :: [Int] -> Int) l
     , bgroup "sum" $ flip map lists $ \(n,l) ->
-      bench n $ whnf (runFoldLeft sumL) l
+      bench n $ whnf (runFoldLeft sumL :: [Int] -> Int) l
     , bgroup "average" $ flip map lists $ \(n,l) ->
-      bench n $ whnf (runFoldLeft averageL) l
+      bench n $ whnf (runFoldLeft averageL :: [Double] -> Double) l
     , bgroup "average'" $ flip map lists $ \(n,l) ->
       bench n $ whnf (runFoldLeft averageL') l
     ]
   , bgroup "FoldMonoid"
     [ bgroup "length" $ flip map lists $ \(n,l) ->
-      bench n $ whnf (runFoldMonoid lengthM) l
+      bench n $ whnf (runFoldMonoid lengthM :: [Int] -> Int) l
     , bgroup "sum" $ flip map lists $ \(n,l) ->
-      bench n $ whnf (runFoldMonoid sumM) l
+      bench n $ whnf (runFoldMonoid sumM :: [Int] -> Int) l
     , bgroup "average" $ flip map lists $ \(n,l) ->
-      bench n $ whnf (runFoldMonoid averageM) l
+      bench n $ whnf (runFoldMonoid averageM :: [Double] -> Double) l
     , bgroup "average'" $ flip map lists $ \(n,l) ->
       bench n $ whnf (runFoldMonoid averageM') l
     ]

@@ -72,8 +72,8 @@ data FoldMonoid i o = forall m. Monoid m => FoldMonoid
   , _summarize :: m -> o
   }
 
-runFoldMonoid :: Foldable f => FoldMonoid i o -> f i -> o
-runFoldMonoid (FoldMonoid t s) = s . foldMap t
+runFoldMonoid :: (Functor f, Foldable f) => FoldMonoid i o -> f i -> o
+runFoldMonoid (FoldMonoid t s) = s . foldl' mappend mempty . fmap t
 
 instance Functor (FoldMonoid i) where
   fmap f (FoldMonoid t s) = FoldMonoid t (f . s)
