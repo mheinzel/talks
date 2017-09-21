@@ -8,10 +8,12 @@ import Data.Foldable (foldl')
 import Data.List.Split (chunksOf)
 import Control.Parallel.Strategies
 
-divide :: Int -> Int -> Double
+
+divide :: Int -> Int -> Double  -- for convenience
 divide x y = intToDouble x / intToDouble y
   where
     intToDouble = fromInteger . fromIntegral
+
 
 length :: [a] -> Int
 length = foldl' (const . (+1)) 0
@@ -21,6 +23,7 @@ sum = foldl' (+) (0)
 
 average :: [Int] -> Double
 average list = divide (sum list) (length list)
+
 
 average' :: [Int] -> Double
 average' xs = divide su le
@@ -55,8 +58,10 @@ instance Applicative (Fold i) where
       pre i = Pair (preF i) (preX i)
       post (Pair mF mX) = postF mF (postX mX)
 
+
 run :: Fold i o -> [i] -> o
 run (Fold pre post) = post . foldl' mappend mempty . map pre
+
 
 lengthF :: Fold i Int
 lengthF = Fold (Sum . const 1) getSum
