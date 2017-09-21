@@ -1,6 +1,7 @@
 name:                beautiful-folds
 version:             0.1.0.0
-synopsis:            code for a beautiful folds talk
+synopsis:            Slides and code about Beautiful Folds
+description:         Slides and code for a short talk on Beautiful Folds, given at the Berlin Haskell Usergs Group meetup on September 20, 2017.
 homepage:            https://github.com/mheinzel/talks
 license:             BSD3
 license-file:        LICENSE
